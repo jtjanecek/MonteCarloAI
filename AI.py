@@ -7,11 +7,11 @@ class AI():
         self._game = game
         self._player = player
 
-    def makeMove(self, gameBoard) -> tuple:
+    def getMove(self, gameBoard) -> tuple:
         pass
 
 
 class RandomAI(AI):
-    def makeMove(self, gameBoard) -> tuple:
-        l = self._game.getAllPossibleMoves(self._player)
+    def getMove(self, gameBoard) -> tuple:
+        l = self._game.getAllPossibleMoves(gameBoard, self._player)
         return l[int(random.random()*len(l))]
