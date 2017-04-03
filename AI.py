@@ -13,5 +13,10 @@ class AI():
 
 class RandomAI(AI):
     def getMove(self, gameBoard) -> tuple:
-        l = self._game.getAllPossibleMoves(gameBoard, self._player)
-        return l[int(random.random()*len(l))]
+        # l = self._game.getAllPossibleMoves(gameBoard, self._player)
+        # return l[int(random.random()*len(l))]
+        f1 = input("F1: ")
+        f2 = input("F2: ")
+        t1 = input("T1: ")
+        t2 = input("T2: ")
+        return ((f1,f2),(t1,t2))

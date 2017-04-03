@@ -37,11 +37,14 @@ class Checkers():
         if move[1][0] > 7 or move[1][0] < 0 or move[1][1] > 7 or move[1][1] < 0:
             return False
 
+        if board[move[1][0]][move[1][1]] != 0:
+            return False
 
         if currPlayer == -1:
             king = -2
         elif currPlayer == 1:
             king = 2
+
         # Check if move from is current player
         if (board[move[0][0]][move[0][1]] != currPlayer) and (board[move[0][0]][move[0][1]] != king):
             return False
@@ -133,6 +136,7 @@ class Checkers():
             move: tuple for board placement
         '''
         # Have to delete old move, especially if jump
+        self._board[move[0][0]][move[0][1]] = 0
         self._board[move[1][0]][move[1][1]] = player
 
     def getBoard(self) -> [list]:
