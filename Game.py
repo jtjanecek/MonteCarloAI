@@ -25,12 +25,11 @@ class Game():
         print(game.getWinner()," is the winner!")
 
     def doMove(self, game, player, cursor):
-        flag = True
         while flag:
             move = player.getMove(list(game.getBoard()))
             if game.isValidMove(game.getBoard(),move, cursor):
                 game.makeMove(cursor, move)
-                flag = False;
+                break
             else:
                 print("INVALID MOVE!")
 
