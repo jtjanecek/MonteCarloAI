@@ -17,9 +17,11 @@ class Checkers():
         Prints board to console
         '''
         map = {-1:'o', -2:'O', 1:'x', 2:'X', 0:'-'}
-        for row in self._board:
-            for col in range(len(row)):
-                print(map[row[col]], end = " ")
+        print("  1 2 3 4 5 6 7 8")
+        for row in range(len(self._board)):
+            print(row + 1, "", end = "")
+            for col in range(len(self._board[row])):
+                print(map[self._board[row][col]], end = " ")
             print()
         print()
 
@@ -68,9 +70,9 @@ class Checkers():
         elif abs(move[0][1] - move[1][1]) == 2:
             if ((move[0][0] + move[1][0]) % 2 != 0) or ((move[0][1] + move[1][1]) % 2 != 0):
                 return False
-            if currPlayer == -1 and (move[0][0] - move[1][0]) == -2 and board[int((move[0][0] + move[1][0])/2)][int((move[0][1] + move[1][1])/2)] > 0:
+            if currPlayer == -1 and (((move[0][0] - move[1][0]) == -2) or isKing) and board[int((move[0][0] + move[1][0])/2)][int((move[0][1] + move[1][1])/2)] > 0:
                 return True
-            elif currPlayer == 1 and (move[0][0] - move[1][0]) == 2 and board[int((move[0][0] + move[1][0])/2)][int((move[0][1] + move[1][1])/2)] < 0:
+            elif currPlayer == 1 and (((move[0][0] - move[1][0]) == 2) or isKing) and board[int((move[0][0] + move[1][0])/2)][int((move[0][1] + move[1][1])/2)] < 0:
                 return True
         return False;
 
@@ -84,20 +86,18 @@ class Checkers():
         resultList = []
         positions = []
 
+        # Get positions of current pieces
         if currPlayer == -1:
             for i in range(len(board)):
                 for j in range(len(board[i])):
                     if board[i][j] < 0:
                         positions.append((i,j))
 
-
-
         elif currPlayer == 1:
             for i in range(len(board)):
                 for j in range(len(board[i])):
                     if board[i][j] > 0:
                         positions.append((i,j))
-
 
         for i in range(len(board)):
             for j in range(len(board[i])):
@@ -135,9 +135,21 @@ class Checkers():
             player: -1 or 1
             move: tuple for board placement
         '''
-        # Have to delete old move, especially if jump
+        self._board[move[1][0]][move[1][1]] = self._board[move[0][0]][move[0][1]]
         self._board[move[0][0]][move[0][1]] = 0
-        self._board[move[1][0]][move[1][1]] = player
+
+        # jump
+        if abs(move[0][1] - move[1][1]) == 2:
+            self._board[int((move[0][0] + move[1][0])/2)][int((move[0][1] + move[1][1])/2)] = 0
+
+        if move[1][0] == 0 or move[1][0] == 7:
+            if player > 0:
+                self._board[move[1][0]][move[1][1]] = 2
+            else:
+                self._board[move[1][0]][move[1][1]] = -2
+
+
+
 
     def getBoard(self) -> [list]:
         return list(self._board)
