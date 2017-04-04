@@ -12,26 +12,29 @@ class Game():
         self._currMove = -1
         while(game.getWinner() == 0):
             game.printBoard()
-            time.sleep(2)
+            #time.sleep(2)
             if self._currMove == -1:
+                self.doMove(game,player1, self._currMove)
                 self._currMove = 1
-                flag = True
-                while flag:
-                    move = player1.getMove(list(game.getBoard()))
-                    if game.isValidMove(game.getBoard(),move, -1):
-                        game.makeMove(-1, move)
-                        flag = False;
+
             elif self._currMove == 1:
+                self.doMove(game,player2, self._currMove)
                 self._currMove = -1
-                flag = True
-                while flag:
-                    move = player2.getMove(list(game.getBoard()))
-                    if game.isValidMove(game.getBoard(),move, 1):
-                        game.makeMove(1, move)
-                        flag = False;
+
+        game.printBoard()
         print(game.getWinner()," is the winner!")
 
+    def doMove(self, game, player, cursor):
+        flag = True
+        while flag:
+            move = player.getMove(list(game.getBoard()))
+            if game.isValidMove(game.getBoard(),move, cursor):
+                game.makeMove(cursor, move)
+                flag = False;
+            else:
+                print("INVALID MOVE!")
 
 # First param = -1
 # Second param = 1
-game = Game(Checkers(), AI.RandomAI(Checkers(), -1), AI.RandomAI(Checkers(), 1))
+for i in range(100):
+    game = Game(Checkers(), AI.RandomAI(Checkers(), -1), AI.RandomAI(Checkers(), 1))
