@@ -72,10 +72,12 @@ class MonteCarloAI(AI):
             if stats[i][1] == 0:
                 weight = 0
             else:
-                weight = (stats[i][0] / stats[i][1]) + c * math.sqrt(math.log(t) / stats[i][1])
+                #weight = (stats[i][0] / stats[i][1]) + c * math.sqrt(math.log(t) / stats[i][1])
+                weight = stats[i][0] / stats[i][1]
             if weight > currentMin:
                 currentMin = weight
                 currentMinIndex = i
+        return possibleMoves[int(random.random() * len(possibleMoves))]
         return possibleMoves[currentMinIndex]
 
     def getNumSims(self, stats):
@@ -97,6 +99,7 @@ class MonteCarloAI(AI):
             if win:
                 num += 1
             self._db.insert(move,num,denom)
+        self._db.commit()
         self._history = []
         print("Back prop complete")
 
