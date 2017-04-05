@@ -12,6 +12,9 @@ class Checkers():
             [1,0,1,0,1,0,1,0]
         ]
 
+    def setBoard(self, board) -> None:
+        self._board = list(board)
+
     def printBoard(self) -> None:
         '''
         Prints board to console
