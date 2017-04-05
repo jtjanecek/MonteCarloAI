@@ -17,6 +17,7 @@ class AI():
 class RandomAI(AI):
     def getMove(self, gameBoard) -> tuple:
         #print("GENERATING MVOE FOR RANDOM")
+        random.seed()
         l = self._game.getAllPossibleMoves(gameBoard, self._playerID)
         return l[int(random.random() * len(l))]
 
@@ -31,10 +32,11 @@ class ConsoleAI(AI):
 
 
 class MonteCarloAI(AI):
-    def __init__(self, game, playerID):
+    def __init__(self, game, playerID, train):
         AI.__init__(self, game, playerID)
         self._history = []
         self._db = MonteCarloDB(playerID)
+        self._train = train
 
     def getMove(self, gameBoard) -> tuple:
         # query database for the stats on each possible move.
@@ -77,7 +79,9 @@ class MonteCarloAI(AI):
             if weight > currentMin:
                 currentMin = weight
                 currentMinIndex = i
-        return possibleMoves[int(random.random() * len(possibleMoves))]
+        if self._train:
+            random.seed()
+            return possibleMoves[int(random.random() * len(possibleMoves))]
         return possibleMoves[currentMinIndex]
 
     def getNumSims(self, stats):
