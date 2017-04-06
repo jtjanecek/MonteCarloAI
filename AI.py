@@ -82,6 +82,8 @@ class MonteCarloAI(AI):
         if self._train:
             random.seed()
             return possibleMoves[int(random.random() * len(possibleMoves))]
+        print(stats)
+        print("Highest move: ", stats[currentMinIndex])
         return possibleMoves[currentMinIndex]
 
     def getNumSims(self, stats):
