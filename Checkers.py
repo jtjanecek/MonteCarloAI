@@ -1,7 +1,9 @@
 class Checkers():
     def __init__(self):
-        # 8 by 8 board
-        self._board = [
+        pass
+
+    def getNewBoard(self) -> [list]:
+        return [
             [0,-1,0,-1,0,-1,0,-1],
             [-1,0,-1,0,-1,0,-1,0],
             [0,-1,0,-1,0,-1,0,-1],
@@ -12,23 +14,29 @@ class Checkers():
             [1,0,1,0,1,0,1,0]
         ]
 
+    def getplayer1ID(self):
+        return -1
+
+    def getplayer2ID(self):
+        return 1
+
     def setBoard(self, board) -> None:
         self._board = list(board)
 
-    def printBoard(self) -> None:
+    def printBoard(self, board) -> None:
         '''
         Prints board to console
         '''
         map = {-1:'o', -2:'O', 1:'x', 2:'X', 0:'-'}
         print("  1 2 3 4 5 6 7 8")
-        for row in range(len(self._board)):
+        for row in range(len(board)):
             print(row + 1, "", end = "")
-            for col in range(len(self._board[row])):
+            for col in range(len(board[row])):
                 print(map[self._board[row][col]], end = " ")
             print()
         print()
 
-    def isValidMove(self, board: [list], move: tuple, currPlayer: int) -> bool:
+    def isValidMove(self, board: [list], move: tuple, playerID: int) -> bool:
         '''
         Checks if current board and move are valid
         ex: move = ((1,2),(3,4))
@@ -45,13 +53,13 @@ class Checkers():
         if board[move[1][0]][move[1][1]] != 0:
             return False
 
-        if currPlayer == -1:
+        if playerID == -1:
             king = -2
-        elif currPlayer == 1:
+        elif playerID == 1:
             king = 2
 
         # Check if move from is current player
-        if (board[move[0][0]][move[0][1]] != currPlayer) and (board[move[0][0]][move[0][1]] != king):
+        if (board[move[0][0]][move[0][1]] != playerID) and (board[move[0][0]][move[0][1]] != king):
             return False
 
         # Check if move is king
@@ -64,25 +72,25 @@ class Checkers():
         if abs(move[0][1] - move[1][1]) == 1 and board[move[1][0]][move[1][1]] == 0:
             if isKing and abs(move[0][0] - move[1][0]) == 1:
                 return True
-            if currPlayer == -1 and (move[0][0] - move[1][0]) == -1:
+            if playerID == -1 and (move[0][0] - move[1][0]) == -1:
                 return True
-            elif currPlayer == 1 and (move[0][0] - move[1][0]) == 1:
+            elif playerID == 1 and (move[0][0] - move[1][0]) == 1:
                 return True
 
         # Check if its a jump
         elif abs(move[0][1] - move[1][1]) == 2:
             if ((move[0][0] + move[1][0]) % 2 != 0) or ((move[0][1] + move[1][1]) % 2 != 0):
                 return False
-            if currPlayer == -1 and (((move[0][0] - move[1][0]) == -2) or isKing) and board[int((move[0][0] + move[1][0])/2)][int((move[0][1] + move[1][1])/2)] > 0:
+            if playerID == -1 and (((move[0][0] - move[1][0]) == -2) or isKing) and board[int((move[0][0] + move[1][0])/2)][int((move[0][1] + move[1][1])/2)] > 0:
                 return True
-            elif currPlayer == 1 and (((move[0][0] - move[1][0]) == 2) or isKing) and board[int((move[0][0] + move[1][0])/2)][int((move[0][1] + move[1][1])/2)] < 0:
+            elif playerID == 1 and (((move[0][0] - move[1][0]) == 2) or isKing) and board[int((move[0][0] + move[1][0])/2)][int((move[0][1] + move[1][1])/2)] < 0:
                 return True
         return False;
 
-    def getAllPossibleMoves(self, board: [list], currPlayer: int) -> list:
+    def getAllPossibleMoves(self, board: [list], playerID: int) -> list:
         '''
         Parameters:
-            currPlayer: -1 or 1
+            playerID: -1 or 1
         Return:
             list of possible moves in tuple form
         '''
@@ -90,13 +98,13 @@ class Checkers():
         positions = []
 
         # Get positions of current pieces
-        if currPlayer == -1:
+        if playerID == -1:
             for i in range(len(board)):
                 for j in range(len(board[i])):
                     if board[i][j] < 0:
                         positions.append((i,j))
 
-        elif currPlayer == 1:
+        elif playerID == 1:
             for i in range(len(board)):
                 for j in range(len(board[i])):
                     if board[i][j] > 0:
@@ -105,12 +113,12 @@ class Checkers():
         for i in range(len(board)):
             for j in range(len(board[i])):
                 for move in positions:
-                    if self.isValidMove(board,(move,(i,j)),currPlayer):
+                    if self.isValidMove(board,(move,(i,j)),playerID):
                         resultList.append((move,(i,j)))
 
         return resultList
 
-    def getWinner(self) -> int:
+    def getWinner(self, board) -> int:
         '''
         Return:
             boolean, -1 if player -1 is winner
@@ -119,11 +127,11 @@ class Checkers():
         '''
         c1 = 0
         c2 = 0
-        for i in range(len(self._board)):
-            for j in range(len(self._board[i])):
-                if self._board[i][j] < 0:
+        for i in range(len(board)):
+            for j in range(len(board[i])):
+                if board[i][j] < 0:
                     c1 += 1
-                elif self._board[i][j] > 0:
+                elif board[i][j] > 0:
                     c2 += 1
         if c1 == 0:
             return 1
@@ -132,31 +140,25 @@ class Checkers():
         return 0
 
 
-    def makeMove(self, player: int, move: tuple) -> None:
+    def makeMove(self, player: int, move: tuple, board) -> [list]:
         '''
         Parameters:
             player: -1 or 1
             move: tuple for board placement
         '''
-        self._board[move[1][0]][move[1][1]] = self._board[move[0][0]][move[0][1]]
-        self._board[move[0][0]][move[0][1]] = 0
+        board[move[1][0]][move[1][1]] = board[move[0][0]][move[0][1]]
+        board[move[0][0]][move[0][1]] = 0
 
         # jump
         if abs(move[0][1] - move[1][1]) == 2:
-            self._board[int((move[0][0] + move[1][0])/2)][int((move[0][1] + move[1][1])/2)] = 0
+            board[int((move[0][0] + move[1][0])/2)][int((move[0][1] + move[1][1])/2)] = 0
 
         if move[1][0] == 0 or move[1][0] == 7:
             if player > 0:
-                self._board[move[1][0]][move[1][1]] = 2
+                board[move[1][0]][move[1][1]] = 2
             else:
-                self._board[move[1][0]][move[1][1]] = -2
-
-
-
-
-    def getBoard(self) -> [list]:
-        return list(self._board)
-
+                board[move[1][0]][move[1][1]] = -2
+        return board
 
 
 '''
