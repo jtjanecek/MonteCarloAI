@@ -9,8 +9,13 @@ class AI():
     def __init__(self, game, playerID):
         self._game = game
         self._playerID = playerID
+        if self._playerID == game.getplayer1ID():
+            self._player1 = True
 
     def getMove(self, gameBoard) -> tuple:
+        pass
+
+    def gameOver(self, winner) -> None:
         pass
 
 
@@ -32,65 +37,131 @@ class ConsoleAI(AI):
 
 
 class MonteCarloAI(AI):
-    def __init__(self, game, playerID, train):
+    def __init__(self, game, playerID, tryhard):
         AI.__init__(self, game, playerID)
         self._history = []
         self._db = MonteCarloDB(playerID)
-        self._train = train
+        self._tryhard = tryhard
+        self._num_simulations = 5
+        self._max_depth = 4
 
     def getMove(self, gameBoard) -> tuple:
         # query database for the stats on each possible move.
         possibleMoves = self._game.getAllPossibleMoves(gameBoard, self._playerID)
         stats = self.getMovesStats(deepcopy(possibleMoves), deepcopy(gameBoard))
-        # pick move based on exploration vs exploitation
-        move = self.pickMove(possibleMoves, stats)
-        # add move to stack
+        move = self.pickMove(deepcopy(gameBoard), possibleMoves, stats)
         self.addToHistory(move, gameBoard)
-
-        # return move
         return move
 
     def getMovesStats(self, possibleMoves, gameBoard):
         stats = []
         for move in possibleMoves:
-            self._game.setBoard(gameBoard)
-            self._game.makeMove(self._playerID, move)
-            board = self._game.getBoard()
-            stats.append(self._db.get(self.boardToString(board)))
+            moveRepr = self.getMoveRepr(move, gameBoard)
+            stats.append(self._db.get(moveRepr))
         return stats
 
-    def addToHistory(self, move, gameBoard):
-        self._game.setBoard(gameBoard)
-        self._game.makeMove(self._playerID, move)
-        board = self._game.getBoard()
-        self._history.append(self.boardToString(board))
 
-    def pickMove(self, possibleMoves, stats):
+    def pickMove(self, board, possibleMoves, stats):
+        '''
+        if stats are empty:
+            for each move:
+                simulate random simulations from that move
+                update stats list
+            get avg of stats list
+            back propagate
+        pick move from policy
+        '''
+        if self.areLeaves(stats):
+            stats = []
+            for move in possibleMoves:
+                stat = self.simulate(board,move)
+                stats.append(self.simulate(board,move))
+            # TODO: back propagagte
+        return self.policy(possibleMoves, stats)
+
+
+
+    def simulate(self, board, move) -> tuple:
+        board = self._game.makeMove(self._playerID, move, board)
+        num = 0
+        denom = 0
+        for i in range(self._num_simulations):
+            outcome = randomPlayout(deepcopy(board))
+            if outcome == self._playerID:
+                num += 1
+            denom += 1
+        return (num, denom)
+
+    def randomPlayout(self, board):
+        if self._player1:
+            currentMove = self._game.getplayer2ID()
+        for i in range(len())
+        # TODO FINISH RANDOM PLAYOUT CODE
+        
+    def policy(possibleMoves, stats) -> tuple:
         c = 1.41421356237
+        c = .5
         t = self.getNumSims(stats)
+        base = .7
         currentMin = -999
         currentMinIndex = 0
         for i in range(len(possibleMoves)):
             if stats[i][1] == 0:
-                weight = 0
+                if self._tryhard:
+                    weight = 0
+                else:
+                    weight = 9999
             else:
-                #weight = (stats[i][0] / stats[i][1]) + c * math.sqrt(math.log(t) / stats[i][1])
-                weight = stats[i][0] / stats[i][1]
+                if self._tryhard:
+                    weight = stats[i][0] / stats[i][1]
+                else:
+                    weight = (stats[i][0] / stats[i][1]) + c * math.sqrt(math.log(t) / stats[i][1])
             if weight > currentMin:
                 currentMin = weight
                 currentMinIndex = i
-        if self._train:
+
+
+        if currentMin == base:
+            #print("No stats... returning random move")
             random.seed()
             return possibleMoves[int(random.random() * len(possibleMoves))]
         print(stats)
         print("Highest move: ", stats[currentMinIndex])
         return possibleMoves[currentMinIndex]
 
+    def evaluateBoard(board):
+        # Specific to checkers
+        total = 0
+        for i in board:
+            for j in i:
+                if j < 0:
+                    total += 1
+                else if j > 0:
+                    total -= 1
+        if total > 0:
+            return -1
+        else:
+            return 1
+        return 0
+
+
+    def addToHistory(self, move, gameBoard):
+        self._history.append(self.getMoveRepr(move,gameBoard))
+
+    def getMoveRepr(self, move, gameBoard) -> str:
+        self._game.setBoard(deepcopy(gameBoard))
+        self._game.makeMove(self._playerID, move)
+        board = self._game.getBoard()
+        return self.boardToString(board)
+
     def getNumSims(self, stats):
         total = 0
         for num, denom in stats:
             total += denom
         return total
+
+    def gameOver(self, winner):
+        self.backPropagate(winner == self._playerID)
 
     def backPropagate(self, win: bool):
         '''
@@ -101,7 +172,7 @@ class MonteCarloAI(AI):
         for move in self._history:
             stats = self._db.get(move)
             num = stats[0]
-            denom = stats[0] + 1
+            denom = stats[1] + 1
             if win:
                 num += 1
             self._db.insert(move,num,denom)
@@ -109,6 +180,11 @@ class MonteCarloAI(AI):
         self._history = []
         print("Back prop complete")
 
+    def areLeaves(stats):
+        for num, denom in stats:
+            if num != 0 and denom != 0:
+                return False
+        return True
 
 
     def boardToString(self, board) -> str:
