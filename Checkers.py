@@ -20,8 +20,6 @@ class Checkers():
     def getplayer2ID(self):
         return 1
 
-    def setBoard(self, board) -> None:
-        self._board = list(board)
 
     def printBoard(self, board) -> None:
         '''
@@ -32,7 +30,7 @@ class Checkers():
         for row in range(len(board)):
             print(row + 1, "", end = "")
             for col in range(len(board[row])):
-                print(map[self._board[row][col]], end = " ")
+                print(map[board[row][col]], end = " ")
             print()
         print()
 

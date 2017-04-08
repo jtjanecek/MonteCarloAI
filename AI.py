@@ -42,7 +42,7 @@ class MonteCarloAI(AI):
         self._history = []
         self._db = MonteCarloDB(playerID)
         self._tryhard = tryhard
-        self._num_simulations = 5
+        self._num_simulations = 30
         self._max_depth = 4
 
     def getMove(self, gameBoard) -> tuple:
@@ -75,8 +75,10 @@ class MonteCarloAI(AI):
             stats = []
             for move in possibleMoves:
                 stat = self.simulate(board,move)
-                stats.append(self.simulate(board,move))
+                stats.append(stat)
             # TODO: back propagagte
+        print(possibleMoves)
+        print(stats)
         return self.policy(possibleMoves, stats)
 
 
@@ -86,7 +88,7 @@ class MonteCarloAI(AI):
         num = 0
         denom = 0
         for i in range(self._num_simulations):
-            outcome = randomPlayout(deepcopy(board))
+            outcome = self.randomPlayout(deepcopy(board))
             if outcome == self._playerID:
                 num += 1
             denom += 1
@@ -94,17 +96,38 @@ class MonteCarloAI(AI):
 
     def randomPlayout(self, board):
         if self._player1:
-            currentMove = self._game.getplayer2ID()
-        for i in range(len())
-        # TODO FINISH RANDOM PLAYOUT CODE
-        
-    def policy(possibleMoves, stats) -> tuple:
+            currentID = self._game.getplayer2ID()
+        for i in range(self._max_depth):
+            move = self.makeRandomMove(board, currentID)
+            board = self._game.makeMove(currentID, move, board)
+            if currentID == self._game.getplayer1ID():
+                currentID = self._game.getplayer2ID()
+            else:
+                currentID = self._game.getplayer1ID()
+        return self.evaluateBoard(board)
+
+    def makeRandomMove(self, board, playerID):
+        random.seed()
+        l = self._game.getAllPossibleMoves(board, playerID)
+        return l[int(random.random() * len(l))]
+
+    def policy(self, possibleMoves, stats) -> tuple:
         c = 1.41421356237
         c = .5
         t = self.getNumSims(stats)
         base = .7
-        currentMin = -999
-        currentMinIndex = 0
+        currentMax = -999
+        currentMaxIndex = 0
+
+        for i in range(len(possibleMoves)):
+            weight = stats[i][0] / stats[i][1]
+            if weight > currentMax:
+                currentMax = weight
+                currentMaxIndex = i
+        return possibleMoves[currentMaxIndex]
+
+
+
         for i in range(len(possibleMoves)):
             if stats[i][1] == 0:
                 if self._tryhard:
@@ -129,16 +152,16 @@ class MonteCarloAI(AI):
         print("Highest move: ", stats[currentMinIndex])
         return possibleMoves[currentMinIndex]
 
-    def evaluateBoard(board):
+    def evaluateBoard(self, board):
         # Specific to checkers
         total = 0
         for i in board:
             for j in i:
                 if j < 0:
-                    total += 1
-                else if j > 0:
                     total -= 1
-        if total > 0:
+                elif j > 0:
+                    total += 1
+        if total < 0:
             return -1
         else:
             return 1
@@ -149,9 +172,7 @@ class MonteCarloAI(AI):
         self._history.append(self.getMoveRepr(move,gameBoard))
 
     def getMoveRepr(self, move, gameBoard) -> str:
-        self._game.setBoard(deepcopy(gameBoard))
-        self._game.makeMove(self._playerID, move)
-        board = self._game.getBoard()
+        board = self._game.makeMove(self._playerID, move, deepcopy(gameBoard))
         return self.boardToString(board)
 
     def getNumSims(self, stats):
@@ -180,7 +201,7 @@ class MonteCarloAI(AI):
         self._history = []
         print("Back prop complete")
 
-    def areLeaves(stats):
+    def areLeaves(self, stats):
         for num, denom in stats:
             if num != 0 and denom != 0:
                 return False
