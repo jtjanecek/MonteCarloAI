@@ -45,39 +45,13 @@ class MonteCarloAI(AI):
         self._num_simulations = 100
         self._max_depth = 10
 
-        # board1 = [
-        #     [0,-1,0,-1,0,-1,0,-1],
-        #     [-1,0,-1,0,-1,0,-1,0],
-        #     [0,-1,0,-1,0,-1,0,-1],
-        #     [0,0,0,0,0,0,0,0],
-        #     [0,0,0,0,0,0,0,0],
-        #     [1,0,1,0,1,0,1,0],
-        #     [0,1,0,1,0,1,0,1],
-        #     [1,0,1,0,1,0,1,0]
-        # ]
-        #
-        # board2 = [
-        #     [0,-1,0,-1,0,-1,0,-1],
-        #     [-1,0,-1,0,-1,0,-1,0],
-        #     [0,0,0,-1,0,-1,0,-1],
-        #     [-1,0,0,0,0,0,0,0],
-        #     [0,1,0,0,0,0,0,0],
-        #     [0,0,0,0,1,0,1,0],
-        #     [0,1,0,1,0,1,0,1],
-        #     [1,0,1,0,1,0,1,0]
-        # ]
-        #
-        # move = ((3,0),(5,2))
-        #
-        # assert(self.evaluateBoard(board1, board2) == -1)
-        # print(self.simulate(board2,move))
 
     def getMove(self, gameBoard) -> tuple:
         # query database for the stats on each possible move.
         possibleMoves = self._game.getAllPossibleMoves(gameBoard, self._playerID)
         stats = self.getMovesStats(deepcopy(possibleMoves), deepcopy(gameBoard))
         move = self.pickMove(deepcopy(gameBoard), possibleMoves, stats)
-        self.addToHistory(move, gameBoard)
+        #self.addToHistory(move, gameBoard)
         return move
 
     def getMovesStats(self, possibleMoves, gameBoard):
@@ -130,8 +104,13 @@ class MonteCarloAI(AI):
         else:
             currentID = self._game.getplayer1ID()
         for i in range(self._max_depth):
-            move = self.getRandomMove(deepcopy(boardAfter), currentID)
-            boardAfter = self._game.makeMove(currentID, move, boardAfter)
+            # If there is no possible move, then it will error, so we should
+            # just skip it
+            try:
+                move = self.getRandomMove(deepcopy(boardAfter), currentID)
+                boardAfter = self._game.makeMove(currentID, move, boardAfter)
+            except IndexError:
+                pass
             if currentID == self._game.getplayer1ID():
                 currentID = self._game.getplayer2ID()
             else:
