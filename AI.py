@@ -43,7 +43,7 @@ class MonteCarloAI(AI):
         self._db = MonteCarloDB(playerID)
         self._tryhard = tryhard
         self._num_simulations = 30
-        self._max_depth = 4
+        self._max_depth = 8
 
     def getMove(self, gameBoard) -> tuple:
         # query database for the stats on each possible move.
@@ -94,17 +94,18 @@ class MonteCarloAI(AI):
             denom += 1
         return (num, denom)
 
-    def randomPlayout(self, board):
+    def randomPlayout(self, boardBefore):
         if self._player1:
             currentID = self._game.getplayer2ID()
+        gameBoard = deepcopy(boardBefore)
         for i in range(self._max_depth):
-            move = self.makeRandomMove(board, currentID)
-            board = self._game.makeMove(currentID, move, board)
+            move = self.makeRandomMove(gameBoard, currentID)
+            gameBoard = self._game.makeMove(currentID, move, gameBoard)
             if currentID == self._game.getplayer1ID():
                 currentID = self._game.getplayer2ID()
             else:
                 currentID = self._game.getplayer1ID()
-        return self.evaluateBoard(board)
+        return self.evaluateBoard(boardBefore, gameBoard)
 
     def makeRandomMove(self, board, playerID):
         random.seed()
@@ -152,15 +153,25 @@ class MonteCarloAI(AI):
         print("Highest move: ", stats[currentMinIndex])
         return possibleMoves[currentMinIndex]
 
-    def evaluateBoard(self, board):
+    def evaluateBoard(self, boardBefore, gameBoard):
         # Specific to checkers
-        total = 0
-        for i in board:
+        # TODO: fix evaluate baord to compate boardBefore and gameBoard
+
+        totalBefore = 0
+        for i in boardBefore:
             for j in i:
                 if j < 0:
                     total -= 1
                 elif j > 0:
                     total += 1
+        totalAfter = 0
+        for i in boardBefore:
+            for j in i:
+                if j < 0:
+                    total -= 1
+                elif j > 0:
+                    total += 1
+
         if total < 0:
             return -1
         else:
